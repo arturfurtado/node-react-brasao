@@ -11,6 +11,7 @@
     "strict": true,
     "skipLibCheck": true,
     "baseUrl": "./src",
+    "types": ["node", "jest"],
     "paths": {
       "*": ["node_modules/*", "src/*"]
     }
