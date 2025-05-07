@@ -5,25 +5,25 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
-} from 'typeorm';
-import { Field, DataType } from './fields';
+} from "typeorm";
+import { Field, DataType } from "./fields";
 
 @Entity()
 export class Fill {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: "uuid" })
   fieldId!: string;
 
-  @Column({ type: 'text' })
-  value!: string;  
+  @Column({ type: "text" })
+  value!: string;
 
   @CreateDateColumn()
   createdAt!: Date;
 
-  @ManyToOne(() => Field, (field) => field.fills, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'fieldId' })
+  @ManyToOne(() => Field, (field) => field.fills, { onDelete: "CASCADE" })
+  @JoinColumn({ name: "fieldId" })
   field!: Field;
 
   parseValue(): string | number | boolean | Date {
@@ -31,7 +31,7 @@ export class Fill {
       case DataType.NUMBER:
         return Number(this.value);
       case DataType.BOOLEAN:
-        return this.value === 'true';
+        return this.value === "true";
       case DataType.DATE:
         return new Date(this.value);
       default:

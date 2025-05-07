@@ -8,6 +8,8 @@ export enum DataType {
   DATE = 'date',
 }
 
+const isTestEnv = process.env.NODE_ENV === 'test';
+
 @Entity()
 export class Field {
   @PrimaryGeneratedColumn('uuid')
@@ -16,7 +18,10 @@ export class Field {
   @Column({ type: 'varchar', unique: true })
   name!: string;
 
-  @Column({ type: 'enum', enum: DataType })
+  @Column({
+    type: isTestEnv ? 'varchar' : 'enum',
+    enum: DataType,
+  })
   datatype!: DataType;
 
   @CreateDateColumn()
