@@ -13,9 +13,15 @@ export async function createField(name: string, datatype: DataType) {
   }
 
   const field = repo().create({ name, datatype });
-  return repo().save(field);
+  const saved = await repo().save(field);
+
+  (saved as any).fills = [];
+  return saved;
 }
 
 export async function listFields() {
-  return repo().find({ order: { createdAt: "ASC" } });
+  return repo().find({
+    relations: ["fills"],
+    order: { createdAt: "ASC" },
+  });
 }
