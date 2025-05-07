@@ -1,7 +1,12 @@
-/** @type {import('ts-jest').JestConfigWithTsJest} **/
+// jest.config.js
+/** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
-  testEnvironment: "node",
+  preset: 'ts-jest',               
+  testEnvironment: 'node',
   transform: {
-    "^.+\.tsx?$": ["ts-jest",{}],
+    '^.+\\.(ts|tsx)$': 'ts-jest'    // arquivos .ts/.tsx via ts-jest
   },
+  testPathIgnorePatterns: [
+    '/dist/',                       // ignora todo o dist/
+  ],
 };
