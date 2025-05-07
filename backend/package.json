@@ -10,6 +10,7 @@
     "migration:run": "npm run typeorm -- migration:run -d src/config/data-source.ts",
     "dev": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules --ignore-watch src/migration -r tsconfig-paths/register src/server.ts",
     "build": "tsc",
+    "prepare": "cd .. && husky .husky",
     "start": "node dist/server.js"
   },
   "keywords": [],
@@ -28,10 +29,13 @@
     "zod": "^3.24.4"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.1",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.15.14",
+    "husky": "^9.1.7",
     "ts-jest": "^29.3.2",
     "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.2.0",
