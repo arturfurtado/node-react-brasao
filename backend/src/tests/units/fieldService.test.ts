@@ -1,10 +1,9 @@
-import { createField, listFields } from '../services/fieldServices';
-import { AppDataSource } from '../config/data-source';
-import { Field, DataType } from '../entities/fields';
+import { createField, listFields } from '../../services/fieldServices';
+import { AppDataSource } from '../../config/data-source';
+import { Field, DataType } from '../../entities/fields';
 import { Repository } from 'typeorm';
-import { Fill } from '../entities/fills';
 
-jest.mock('../config/data-source', () => ({
+jest.mock('../../config/data-source', () => ({
   AppDataSource: {
     getRepository: jest.fn().mockReturnValue({
       findOneBy: jest.fn(),
@@ -92,7 +91,10 @@ describe('Field Service', () => {
 
     const result = await listFields();
 
-    expect(repo.find).toHaveBeenCalledWith({ order: { createdAt: 'ASC' } });
+    expect(repo.find).toHaveBeenCalledWith({
+      order: { createdAt: 'ASC' },
+      relations: ['fills'], 
+    });
     expect(result).toEqual(fields);
     result.forEach((f, idx) => {
       expect(f.fills).toEqual(fields[idx].fills);

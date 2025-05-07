@@ -1,7 +1,7 @@
-import { Fill } from '../entities/fills';
-import { Field, DataType } from '../entities/fields';
-import { createFill } from '../services/fillService';
-import { listFills } from '../services/fillService';
+import { Fill } from '../../entities/fills';
+import { Field, DataType } from '../../entities/fields';
+import { createFill } from '../../services/fillService';
+import { listFills } from '../../services/fillService';
 
 const mockFillRepo = {
   create: jest.fn(),
@@ -12,7 +12,7 @@ const mockFieldRepo = {
   findOne: jest.fn(),
 };
 
-jest.mock('../config/data-source', () => ({
+jest.mock('../../config/data-source', () => ({
   AppDataSource: {
     getRepository: jest
       .fn()
