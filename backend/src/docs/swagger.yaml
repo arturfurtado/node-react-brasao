@@ -1,4 +1,147 @@
-import swaggerUi from "swagger-ui-express";
-import swaggerDocument from "./docs/swagger.yaml";
+openapi: 3.0.1
+info:
+  title: API de Campos e Preenchimentos
+  description: |
+    API REST para criar e gerenciar campos dinâmicos e seus preenchimentos.
+  version: 1.0.0
+servers:
+  - url: http://localhost:4000
+    description: Servidor local de desenvolvimento
 
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+components:
+  schemas:
+    Field:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        datatype:
+          type: string
+          enum: [string, number, boolean, date]
+        createdAt:
+          type: string
+          format: date-time
+        fills:
+          type: array
+          items:
+            $ref: "#/components/schemas/Fill"
+      required: [id, name, datatype, createdAt, fills]
+
+    Fill:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        fieldId:
+          type: string
+          format: uuid
+        value:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        field:
+          $ref: "#/components/schemas/Field"
+      required: [id, fieldId, value, createdAt, field]
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
+
+paths:
+  /campos:
+    post:
+      summary: Cria um novo campo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                datatype:
+                  type: string
+                  enum: [string, number, boolean, date]
+              required: [name, datatype]
+      responses:
+        "201":
+          description: Campo criado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Field"
+        "400":
+          description: Erro de validação ou nome duplicado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    get:
+      summary: Lista todos os campos
+      responses:
+        "200":
+          description: Lista de campos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Field"
+
+  /preenchimentos:
+    post:
+      summary: Adiciona um preenchimento
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fieldId:
+                  type: string
+                  format: uuid
+                value:
+                  type: string
+              required: [fieldId, value]
+      responses:
+        "201":
+          description: Preenchimento criado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Fill"
+        "400":
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Campo não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    get:
+      summary: Lista todos os preenchimentos
+      responses:
+        "200":
+          description: Lista de preenchimentos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Fill"
