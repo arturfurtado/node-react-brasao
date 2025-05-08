@@ -1,5 +1,5 @@
 import { useState, useEffect, createContext, useContext } from "react";
-import { Routes, Route, NavLink, BrowserRouter } from "react-router-dom";
+import { Routes, Route, NavLink, HashRouter } from "react-router-dom";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -73,7 +73,7 @@ const ThemeToggle: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <ThemeProvider>
         <div className="min-h-screen bg-gray-50 dark:bg-neutral-800 transition-colors duration-200">
           <NavigationMenu className="bg-white dark:bg-neutral-900 shadow p-4 w-full max-w-full">
@@ -123,7 +123,7 @@ const App: React.FC = () => {
         </div>
             <ToastContainer position="top-right" autoClose={3000} />
       </ThemeProvider>
-    </BrowserRouter>
+    </HashRouter>
   );
 };
 
