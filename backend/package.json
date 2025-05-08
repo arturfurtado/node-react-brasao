@@ -7,7 +7,7 @@
     "test": "cross-env NODE_ENV=test jest --runInBand",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "migration:generate": "npm run typeorm -- migration:generate ./src/migration/CreateFieldsAndFills -d src/config/data-source.ts",
-    "migration:run": "npm run typeorm -- migration:run -d src/config/data-source.ts",
+    "migration:run": "npm run typeorm -- migration:run -d dist/config/data-source.js",
     "dev": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules --ignore-watch src/migration -r tsconfig-paths/register src/server.ts",
     "build": "tsc",
     "postbuild": "cp -R src/docs dist/docs && cp -R src/migration dist/migration",

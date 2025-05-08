@@ -1,20 +1,14 @@
-FROM node:18-alpine AS build
-WORKDIR /usr/src/app
+FROM node:23-alpine
+
+WORKDIR /usr/app
 
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
-COPY tsconfig.json ./
-COPY src ./src
+COPY . .
+
 RUN npm run build
 
-FROM node:18-alpine
-WORKDIR /usr/src/app
-
-COPY --from=build /usr/src/app/package*.json ./
-COPY --from=build /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app/dist ./dist
-
-ENV NODE_ENV=production
 EXPOSE 4000
-CMD ["node", "dist/server.js"]
+
+CMD ["npm", "run", "start"]
