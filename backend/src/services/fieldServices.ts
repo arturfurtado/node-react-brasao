@@ -1,27 +1,22 @@
+import { ValidationException } from "../exceptions/validateException";
 import { AppDataSource } from "../config/data-source";
 import { Field, DataType } from "../entities/fields";
 import { Repository } from "typeorm";
+import { fieldRepository } from "../repositories/field-repository";
 
 const repo = (): Repository<Field> => AppDataSource.getRepository(Field);
 
 export async function createField(name: string, datatype: DataType) {
-  const exists = await repo().findOneBy({ name });
+  const exists = await fieldRepository.findByName(name);
   if (exists) {
-    const err = new Error("Já existe um campo com esse nome.");
-    (err as any).statusCode = 400;
-    throw err;
+    throw new ValidationException("Esse nome ja existe");
   }
 
-  const field = repo().create({ name, datatype });
-  const saved = await repo().save(field);
-
-  (saved as any).fills = [];
-  return saved;
+  const field = await fieldRepository.create(name, datatype);
+  field.fills = [];
+  return field;
 }
 
 export async function listFields() {
-  return repo().find({
-    relations: ["fills"],
-    order: { createdAt: "ASC" },
-  });
+  return fieldRepository.findAllWithFills();
 }

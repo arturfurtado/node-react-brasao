@@ -1,40 +1,30 @@
 import { createField, listFields } from '../../services/fieldServices';
 import { AppDataSource } from '../../config/data-source';
 import { Field, DataType } from '../../entities/fields';
-import { Repository } from 'typeorm';
+import { FieldRepository, fieldRepository } from '../../repositories/field-repository';
 
-jest.mock('../../config/data-source', () => ({
-  AppDataSource: {
-    getRepository: jest.fn().mockReturnValue({
-      findOneBy: jest.fn(),
+jest.mock('../../repositories/field-repository', () => ({
+  fieldRepository:{
+      findByName: jest.fn(),
+      findById: jest.fn(),
       create: jest.fn(),
-      save: jest.fn(),
-      find: jest.fn(),
-    }),
-  },
+      findAllWithFills: jest.fn(),
+    },
 }));
 
 describe('Field Service', () => {
-  let repo: jest.Mocked<Repository<Field>>;
+  let repo: jest.Mocked<FieldRepository>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    repo = AppDataSource.getRepository(Field) as unknown as jest.Mocked<Repository<Field>>;
+    repo = fieldRepository as jest.Mocked<FieldRepository>;
   });
 
   test('createField - deve criar um novo campo com nome único', async () => {
-    repo.findOneBy.mockResolvedValue(null);
-
+    repo.findById.mockResolvedValue(null);
     const now = new Date();
-    repo.create.mockReturnValue({
-      id: 'generated-id',
-      name: 'Teste',
-      datatype: DataType.STRING,
-      createdAt: now,
-      fills: [],
-    } as unknown as Field);
 
-    repo.save.mockResolvedValue({
+    repo.create.mockResolvedValue({
       id: 'generated-id',
       name: 'Teste',
       datatype: DataType.STRING,
@@ -44,9 +34,8 @@ describe('Field Service', () => {
 
     const field = await createField('Teste', DataType.STRING);
 
-    expect(repo.findOneBy).toHaveBeenCalledWith({ name: 'Teste' });
-    expect(repo.create).toHaveBeenCalledWith({ name: 'Teste', datatype: DataType.STRING });
-    expect(repo.save).toHaveBeenCalled();
+    expect(repo.findByName).toHaveBeenCalledWith('Teste');
+    expect(repo.create).toHaveBeenCalledWith('Teste', DataType.STRING);
 
     expect(field).toMatchObject({
       id: 'generated-id',
@@ -58,7 +47,7 @@ describe('Field Service', () => {
   });
 
   test('createField - deve lançar erro se o nome já existir', async () => {
-    repo.findOneBy.mockResolvedValue({
+    repo.findByName.mockResolvedValue({
       id: '1',
       name: 'Teste',
       datatype: DataType.STRING,
@@ -69,10 +58,9 @@ describe('Field Service', () => {
     } as unknown as Field);
 
     await expect(createField('Teste', DataType.STRING))
-      .rejects.toThrow('Já existe um campo com esse nome.');
+      .rejects.toThrow('Esse nome ja existe');
 
     expect(repo.create).not.toHaveBeenCalled();
-    expect(repo.save).not.toHaveBeenCalled();
   });
 
   test('listFields - deve retornar a lista de campos ordenada com fills', async () => {
@@ -87,14 +75,11 @@ describe('Field Service', () => {
         fills: [sampleFill],
       },
     ];
-    repo.find.mockResolvedValue(fields as any);
+    repo.findAllWithFills.mockResolvedValue(fields as any);
 
     const result = await listFields();
 
-    expect(repo.find).toHaveBeenCalledWith({
-      order: { createdAt: 'ASC' },
-      relations: ['fills'], 
-    });
+    expect(repo.findAllWithFills).toHaveBeenCalled()
     expect(result).toEqual(fields);
     result.forEach((f, idx) => {
       expect(f.fills).toEqual(fields[idx].fills);

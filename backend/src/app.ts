@@ -5,6 +5,7 @@ import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
 import fieldRouter from "./routes/fieldRoutes";
 import fillRouter from "./routes/fillRoutes";
+import { errorMiddleware } from "./middlewares/errorMiddleware";
 
 const swaggerDocument = YAML.load(
   path.resolve(__dirname, "./docs/swagger.yaml")
@@ -24,15 +25,6 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use("/campos", fieldRouter);
 app.use("/preenchimentos", fillRouter);
 
-app.use(
-  (err: HttpError, req: Request, res: Response, next: NextFunction) => {
-    if (process.env.NODE_ENV !== "test") {
-      console.error(err.stack || err);
-    }
-    const statusCode = err.statusCode || 500;
-    const message = err.message || "Ocorreu um erro interno no servidor.";
-    res.status(statusCode).json({ message });
-  }
-);
+app.use(errorMiddleware)
 
 export default app;

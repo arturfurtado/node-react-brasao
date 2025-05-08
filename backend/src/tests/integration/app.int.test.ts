@@ -51,7 +51,7 @@ describe("Integração /campos e /preenchimentos", () => {
       .send(payload)
       .expect(400)
       .then((res) => {
-        expect(res.body.message).toMatch(/já existe um campo/i);
+        expect(res.body.message).toBe("Esse nome ja existe");
       });
   });
 

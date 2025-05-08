@@ -1,41 +1,36 @@
-import { AppDataSource } from "../config/data-source";
-import { Fill } from "../entities/fills";
-import { Field } from "../entities/fields";
-import { Repository } from "typeorm";
-
-const fillRepo = (): Repository<Fill> => AppDataSource.getRepository(Fill);
-const fieldRepo = (): Repository<Field> => AppDataSource.getRepository(Field);
+import { ValidationException } from "../exceptions/validateException";
+import { fillRepository } from "../repositories/fill-repository";
+import { fieldRepository } from "../repositories/field-repository"; 
 
 export async function createFill(fieldId: string, value: string) {
-  const field = await fieldRepo().findOne({ where: { id: fieldId } });
+  const field = await fieldRepository.findById(fieldId);
   if (!field) {
-    const err = new Error("Campo não encontrado.");
-    (err as any).statusCode = 404;
-    throw err;
+    throw new ValidationException("Campo nao encontrado");
   }
 
   switch (field.datatype) {
     case "number":
       if (isNaN(Number(value))) {
-        throw Object.assign(new Error("Valor deve ser numérico."), { statusCode: 400 });
+        throw new ValidationException("Valor deve ser numérico.");
       }
       break;
     case "boolean":
       if (value !== "true" && value !== "false") {
-        throw Object.assign(new Error("Valor deve ser booleano ('true' ou 'false')."), { statusCode: 400 });
+        throw new ValidationException("Valor deve ser booleano ('true' ou 'false').");
       }
       break;
     case "date":
       if (isNaN(new Date(value).getTime())) {
-        throw Object.assign(new Error("Formato de data inválido."), { statusCode: 400 });
+        throw new ValidationException("Formato de data inválido.");
+
       }
       break;
   }
 
-  const fill = fillRepo().create({ fieldId, value });
-  return fillRepo().save(fill);
+  const fill = await fillRepository.create(fieldId, value)
+  return fill;
 }
 
 export async function listFills() {
-  return fillRepo().find({ relations: ["field"], order: { createdAt: "ASC" } });
+  return fillRepository.findAllWithField()
 }
