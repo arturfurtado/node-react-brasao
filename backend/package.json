@@ -10,6 +10,7 @@
     "migration:run": "npm run typeorm -- migration:run -d src/config/data-source.ts",
     "dev": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules --ignore-watch src/migration -r tsconfig-paths/register src/server.ts",
     "build": "tsc",
+    "postbuild": "cp -R src/docs dist/docs && cp -R src/migration dist/migration",
     "prepare": "cd .. && husky .husky",
     "start": "node dist/server.js"
   },
