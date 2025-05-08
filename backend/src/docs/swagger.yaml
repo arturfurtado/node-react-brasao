@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: API de Campos e Preenchimentos
   description: |
-    API REST para criar e gerenciar campos dinâmicos e seus preenchimentos.
+    API REST para criar, listar, atualizar e remover campos dinâmicos e seus preenchimentos.
   version: 1.0.0
 servers:
   - url: http://localhost:4000
@@ -20,15 +20,24 @@ components:
           type: string
         datatype:
           type: string
-          enum: [string, number, boolean, date]
+          enum:
+            - string
+            - number
+            - boolean
+            - date
         createdAt:
           type: string
           format: date-time
         fills:
           type: array
           items:
-            $ref: "#/components/schemas/Fill"
-      required: [id, name, datatype, createdAt, fills]
+            $ref: '#/components/schemas/Fill'
+      required:
+        - id
+        - name
+        - datatype
+        - createdAt
+        - fills
 
     Fill:
       type: object
@@ -45,15 +54,92 @@ components:
           type: string
           format: date-time
         field:
-          $ref: "#/components/schemas/Field"
-      required: [id, fieldId, value, createdAt, field]
+          $ref: '#/components/schemas/Field'
+      required:
+        - id
+        - fieldId
+        - value
+        - createdAt
+        - field
+
+    CreateFieldRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        datatype:
+          type: string
+          enum:
+            - string
+            - number
+            - boolean
+            - date
+      required:
+        - name
+        - datatype
+
+    UpdateFieldRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        datatype:
+          type: string
+          enum:
+            - string
+            - number
+            - boolean
+            - date
+      required:
+        - name
+        - datatype
+
+    CreateFillRequest:
+      type: object
+      properties:
+        fieldId:
+          type: string
+          format: uuid
+        value:
+          type: string
+      required:
+        - fieldId
+        - value
+
+    UpdateFillRequest:
+      type: object
+      properties:
+        value:
+          type: string
+      required:
+        - value
 
     ErrorResponse:
       type: object
       properties:
         message:
           type: string
-      required: [message]
+      required:
+        - message
+
+  parameters:
+    campoId:
+      name: id
+      in: path
+      description: UUID do campo
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    preenchimentoId:
+      name: id
+      in: path
+      description: UUID do preenchimento
+      required: true
+      schema:
+        type: string
+        format: uuid
 
 paths:
   /campos:
@@ -64,84 +150,158 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                datatype:
-                  type: string
-                  enum: [string, number, boolean, date]
-              required: [name, datatype]
+              $ref: '#/components/schemas/CreateFieldRequest'
       responses:
-        "201":
-          description: Campo criado
+        '201':
+          description: Campo criado com sucesso
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Field"
-        "400":
+                $ref: '#/components/schemas/Field'
+        '400':
           description: Erro de validação ou nome duplicado
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
 
     get:
-      summary: Lista todos os campos
+      summary: Lista todos os campos (com seus fills)
       responses:
-        "200":
+        '200':
           description: Lista de campos
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Field"
+                  $ref: '#/components/schemas/Field'
 
-  /preenchimentos:
-    post:
-      summary: Adiciona um preenchimento
+  /campos/{id}:
+    parameters:
+      - $ref: '#/components/parameters/campoId'
+
+    put:
+      summary: Atualiza nome e datatype de um campo existente
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                fieldId:
-                  type: string
-                  format: uuid
-                value:
-                  type: string
-              required: [fieldId, value]
+              $ref: '#/components/schemas/UpdateFieldRequest'
       responses:
-        "201":
-          description: Preenchimento criado
+        '200':
+          description: Campo atualizado com sucesso
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Fill"
-        "400":
+                $ref: '#/components/schemas/Field'
+        '400':
           description: Erro de validação
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
           description: Campo não encontrado
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Remove um campo (e todos os fills associados)
+      responses:
+        '204':
+          description: Campo removido com sucesso (sem conteúdo)
+        '404':
+          description: Campo não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /preenchimentos:
+    post:
+      summary: Adiciona um preenchimento a um campo existente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFillRequest'
+      responses:
+        '201':
+          description: Preenchimento criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Fill'
+        '400':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Campo não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     get:
-      summary: Lista todos os preenchimentos
+      summary: Lista todos os preenchimentos (com dados do campo)
       responses:
-        "200":
+        '200':
           description: Lista de preenchimentos
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Fill"
+                  $ref: '#/components/schemas/Fill'
+
+  /preenchimentos/{id}:
+    parameters:
+      - $ref: '#/components/parameters/preenchimentoId'
+
+    put:
+      summary: Atualiza o valor de um preenchimento existente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFillRequest'
+      responses:
+        '200':
+          description: Preenchimento atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Fill'
+        '400':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Preenchimento ou campo não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Remove um preenchimento existente
+      responses:
+        '204':
+          description: Preenchimento removido com sucesso (sem conteúdo)
+        '404':
+          description: Preenchimento não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
