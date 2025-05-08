@@ -12,7 +12,10 @@ const envPath =
 dotenv.config({ path: envPath });
 
 const isTest = process.env.NODE_ENV === "test";
-const hasDatabaseUrl = !!process.env.DATABASE_URL;
+const hasDatabaseUrl = Boolean(process.env.DATABASE_URL);
+
+const migrationsPathJs = path.join(__dirname, "..", "migration", "*.js");
+const migrationsPathTs = path.join(__dirname, "..", "migration", "*.ts");
 
 export const AppDataSource = new DataSource(
   isTest
@@ -28,7 +31,7 @@ export const AppDataSource = new DataSource(
         type: "postgres",
         url: process.env.DATABASE_URL,
         entities: [Field, Fill],
-        migrations: [path.join(__dirname, "..", "migration", "*.js")],
+        migrations: [migrationsPathJs, migrationsPathTs],
         synchronize: false,
       }
     : {
@@ -39,7 +42,7 @@ export const AppDataSource = new DataSource(
         password: process.env.DB_PASS,
         database: process.env.DB_NAME,
         entities: [Field, Fill],
-        migrations: [path.join(__dirname, "..", "migration", "*.js")],
+        migrations: [migrationsPathTs],
         synchronize: false,
       }
 );
