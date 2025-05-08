@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from "express";
+import express from "express";
 import cors from "cors";
 import path from "path";
 import swaggerUi from "swagger-ui-express";
@@ -11,20 +11,17 @@ const swaggerDocument = YAML.load(
   path.resolve(__dirname, "./docs/swagger.yaml")
 );
 
-interface HttpError extends Error {
-  statusCode?: number;
-}
-
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: "https://node-react-brasao-v37a.vercel.app",
+  methods: ["GET","POST","PUT","DELETE"],
+}));
+
 app.use(express.json());
-
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
 app.use("/campos", fieldRouter);
 app.use("/preenchimentos", fillRouter);
-
-app.use(errorMiddleware)
+app.use(errorMiddleware);
 
 export default app;
