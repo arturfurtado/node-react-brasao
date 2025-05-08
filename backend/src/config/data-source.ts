@@ -31,7 +31,7 @@ export const AppDataSource = new DataSource(
         type: "postgres",
         url: process.env.DATABASE_URL,
         entities: [Field, Fill],
-        migrations: [migrationsPathJs, migrationsPathTs],
+        migrations: [path.join(__dirname, "..", "migration", "*.js")], 
         synchronize: false,
       }
     : {
@@ -42,7 +42,7 @@ export const AppDataSource = new DataSource(
         password: process.env.DB_PASS,
         database: process.env.DB_NAME,
         entities: [Field, Fill],
-        migrations: [migrationsPathTs],
+        migrations: [path.join(__dirname, "..", "migration", "*.js")], 
         synchronize: false,
       }
 );

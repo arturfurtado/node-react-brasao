@@ -16,5 +16,5 @@
       "*": ["node_modules/*", "src/*"]
     }
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "migration"]
 }
