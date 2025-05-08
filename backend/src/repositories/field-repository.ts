@@ -23,6 +23,18 @@ export class FieldRepository {
             order: {createdAt: "ASC"}
         })
     }
-}
+
+    async update(
+        id: string,
+        attrs: Partial<{ name: string; datatype: DataType }>
+      ): Promise<Field> {
+        await this.repo.update(id, attrs);
+        return this.findById(id) as Promise<Field>;
+      }
+    
+      async delete(id: string): Promise<void> {
+        await this.repo.delete(id);
+      }
+    }
 
 export const fieldRepository = new FieldRepository()
