@@ -1,136 +1,208 @@
-import { Fill } from '../../entities/fills';
-import { Field, DataType } from '../../entities/fields';
-import { createFill } from '../../services/fillService';
-import { listFills } from '../../services/fillService';
+import {
+  createFill,
+  listFills,
+  updateFill,
+  deleteFill,
+} from "../../services/fillService";
+import { Field, DataType } from "../../entities/fields";
+import { Fill } from "../../entities/fills";
+import { fieldRepository } from "../../repositories/field-repository";
+import { fillRepository } from "../../repositories/fill-repository";
 
-const mockFillRepo = {
-  create: jest.fn(),
-  save: jest.fn(),
-  find: jest.fn(),
-};
-const mockFieldRepo = {
-  findOne: jest.fn(),
-};
+jest.mock("../../repositories/field-repository");
+jest.mock("../../repositories/fill-repository");
 
-jest.mock('../../config/data-source', () => ({
-  AppDataSource: {
-    getRepository: jest
-      .fn()
-      .mockImplementation((entity) => {
-        if (entity === Fill)  return mockFillRepo;
-        if (entity === Field) return mockFieldRepo;
-        throw new Error(`Unexpected repository: ${entity}`);
-      }),
-  },
-}));
+const fieldRepo = fieldRepository as jest.Mocked<typeof fieldRepository>;
+const fillRepo = fillRepository as jest.Mocked<typeof fillRepository>;
 
-describe('Fill Service', () => {
-  let fillRepo = mockFillRepo as jest.Mocked<typeof mockFillRepo>;
-  let fieldRepo = mockFieldRepo as jest.Mocked<typeof mockFieldRepo>;
-
+describe("Fill Service", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('createFill - deve criar preenchimento com fieldId válido e value correto', async () => {
-    fieldRepo.findOne.mockResolvedValue({
-      id: '1',
-      name: 'Teste',
-      datatype: DataType.NUMBER,
-      createdAt: new Date(),
-      fills: [],
-    } as any);
+  describe("createFill", () => {
+    test("deve criar preenchimento com fieldId válido e value correto", async () => {
+      fieldRepo.findById.mockResolvedValue({
+        id: "1",
+        name: "Teste",
+        datatype: DataType.NUMBER,
+        createdAt: new Date(),
+        fills: [],
+      } as any);
 
-    mockFillRepo.create.mockReturnValue({
-      id: '1', fieldId: '1', value: '123', createdAt: new Date(), field: {} as any,
-      parseValue: () => 123,
-    } as any);
-    mockFillRepo.save.mockResolvedValue({
-      id: '1', fieldId: '1', value: '123', createdAt: new Date(), field: {} as any,
-      parseValue: () => 123,
-    } as any);
+      fillRepo.create.mockResolvedValue({
+        id: "1",
+        fieldId: "1",
+        value: "123",
+        createdAt: new Date(),
+        field: {} as any,
+        parseValue: () => 123,
+      } as any);
 
-    const fill = await createFill('1', '123');
-    expect(fill).toHaveProperty('id');
-    expect(fill.fieldId).toBe('1');
-    expect(fill.value).toBe('123');
-  });
-
-  test('createFill - deve lançar erro se fieldId não existir', async () => {
-    fieldRepo.findOne.mockResolvedValue(null);
-
-    await expect(createFill('invalid-id', '123')).rejects.toThrow('Campo não encontrado.');
-  });
-
-  test('createFill - deve lançar erro se value não for numérico para datatype number', async () => {
-    fieldRepo.findOne.mockResolvedValue({
-      id: '1',
-      name: 'Teste',
-      datatype: DataType.NUMBER,
-      createdAt: new Date(),
-      fills: [],
+      const fill = await createFill("1", "123");
+      expect(fill).toHaveProperty("id");
+      expect(fill.fieldId).toBe("1");
+      expect(fill.value).toBe("123");
     });
 
-    await expect(createFill('1', 'abc')).rejects.toThrow('Valor deve ser numérico.');
-  });
-
-  test('createFill - deve lançar erro se value não for booleano para datatype boolean', async () => {
-    fieldRepo.findOne.mockResolvedValue({
-      id: '1',
-      name: 'Teste',
-      datatype: DataType.BOOLEAN,
-      createdAt: new Date(),
-      fills: [],
+    test("deve lançar erro se fieldId não existir", async () => {
+      fieldRepo.findById.mockResolvedValue(null);
+      await expect(createFill("invalid-id", "123")).rejects.toThrow(
+        "Campo nao encontrado"
+      );
     });
 
-    await expect(createFill('1', 'abc')).rejects.toThrow("Valor deve ser booleano ('true' ou 'false').");
-  });
+    test("deve lançar erro se value não for numérico para datatype number", async () => {
+      fieldRepo.findById.mockResolvedValue({
+        id: "1",
+        name: "Teste",
+        datatype: DataType.NUMBER,
+        createdAt: new Date(),
+        fills: [],
+      } as any);
 
-  test('createFill - deve lançar erro se value não for data válida para datatype date', async () => {
-    fieldRepo.findOne.mockResolvedValue({
-      id: '1',
-      name: 'Teste',
-      datatype: DataType.DATE,
-      createdAt: new Date(),
-      fills: [],
+      await expect(createFill("1", "abc")).rejects.toThrow(
+        "Valor deve ser numérico."
+      );
     });
 
-    await expect(createFill('1', 'abc')).rejects.toThrow('Formato de data inválido.');
+    test("deve lançar erro se value não for booleano para datatype boolean", async () => {
+      fieldRepo.findById.mockResolvedValue({
+        id: "1",
+        name: "Teste",
+        datatype: DataType.BOOLEAN,
+        createdAt: new Date(),
+        fills: [],
+      } as any);
+
+      await expect(createFill("1", "abc")).rejects.toThrow(
+        "Valor deve ser booleano ('true' ou 'false')."
+      );
+    });
+
+    test("deve lançar erro se value não for data válida para datatype date", async () => {
+      fieldRepo.findById.mockResolvedValue({
+        id: "1",
+        name: "Teste",
+        datatype: DataType.DATE,
+        createdAt: new Date(),
+        fills: [],
+      } as any);
+
+      await expect(createFill("1", "abc")).rejects.toThrow(
+        "Formato de data inválido."
+      );
+    });
   });
 
-  test('listFills - deve retornar a lista de preenchimentos', async () => {
-    const field = {
-      id: '1',
-      name: 'Teste',
+  describe("listFills", () => {
+    test("deve retornar a lista de preenchimentos", async () => {
+      const now = new Date();
+      const dummyField: Field = {
+        id: "1",
+        name: "Teste",
+        datatype: DataType.NUMBER,
+        createdAt: now,
+        fills: [],
+      };
+      const fill = {
+        id: "1",
+        fieldId: "1",
+        value: "123",
+        createdAt: now,
+        field: dummyField,
+        parseValue() {
+          switch (this.field.datatype) {
+            case DataType.NUMBER:
+              return Number(this.value);
+            case DataType.BOOLEAN:
+              return this.value === "true";
+            case DataType.DATE:
+              return new Date(this.value);
+            default:
+              return this.value;
+          }
+        },
+      } as Fill;
+      fillRepo.findAllWithField.mockResolvedValue([fill]);
+      const result = await listFills();
+      expect(result).toEqual([fill]);
+      expect(fillRepo.findAllWithField).toHaveBeenCalled();
+    });
+  });
+
+  describe("updateFill", () => {
+    const dummyField: Field = {
+      id: "f1",
+      name: "Teste",
       datatype: DataType.NUMBER,
       createdAt: new Date(),
       fills: [],
     };
-  
-    const fill = {
-      id: '1',
-      fieldId: '1',
-      value: '123',
+    const dummyFill: Fill = {
+      id: "x1",
+      fieldId: "f1",
+      value: "42",
       createdAt: new Date(),
-      field: field,
-      parseValue: function (): string | number | boolean | Date {
-        switch (this.field.datatype) {
-          case DataType.NUMBER:
-            return Number(this.value);
-          case DataType.BOOLEAN:
-            return this.value === 'true';
-          case DataType.DATE:
-            return new Date(this.value);
-          default:
-            return this.value;
-        }
+      field: dummyField,
+      parseValue() {
+        return Number(this.value);
       },
-    };
-  
-    const fills = [fill];
-    fillRepo.find.mockResolvedValue(fills);
-    const result = await listFills();
-    expect(result).toEqual(fills);
-    expect(fillRepo.find).toHaveBeenCalledWith({ relations: ['field'], order: { createdAt: 'ASC' } });
+    } as any;
+
+    test("deve atualizar quando válido", async () => {
+      fillRepo.findById.mockResolvedValue(dummyFill);
+      fieldRepo.findById.mockResolvedValue(dummyField);
+      fillRepo.update.mockResolvedValue({
+        ...dummyFill,
+        value: "99",
+      } as any);
+
+      const updated = await updateFill("x1", "99");
+      expect(fillRepo.findById).toHaveBeenCalledWith("x1");
+      expect(fieldRepo.findById).toHaveBeenCalledWith("f1");
+      expect(updated.value).toBe("99");
+    });
+
+    test("deve lançar se fill não existir", async () => {
+      fillRepo.findById.mockResolvedValue(null);
+      await expect(updateFill("nope", "123")).rejects.toThrow(
+        "Fill não encontrado"
+      );
+    });
+
+    test("deve lançar se o valor for inválido (datatype number)", async () => {
+      fillRepo.findById.mockResolvedValue(dummyFill);
+      fieldRepo.findById.mockResolvedValue(dummyField);
+      await expect(updateFill("x1", "abc")).rejects.toThrow(
+        "Valor deve ser numérico."
+      );
+    });
+  });
+
+  describe("deleteFill", () => {
+    const dummyFill: Fill = {
+      id: "x1",
+      fieldId: "f1",
+      value: "42",
+      createdAt: new Date(),
+      field: {} as any,
+      parseValue() {
+        return Number(this.value);
+      },
+    } as any;
+
+    test("deve deletar quando existir", async () => {
+      fillRepo.findById.mockResolvedValue(dummyFill);
+      await expect(deleteFill("x1")).resolves.toBeUndefined();
+      expect(fillRepo.delete).toHaveBeenCalledWith("x1");
+    });
+
+    test("deve lançar se fill não existir", async () => {
+      fillRepo.findById.mockResolvedValue(null);
+      await expect(deleteFill("nope")).rejects.toThrow(
+        "Fill não encontrado"
+      );
+    });
   });
 });
