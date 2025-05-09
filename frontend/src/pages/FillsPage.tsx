@@ -34,7 +34,7 @@ export default function FillsPage() {
   }, [refreshFills]);
 
   return (
-    <div>
+    <div data-testid="fill-form">
       <h1 className="text-2xl mb-4">Campos e Preenchimentos</h1>
 
       <FillForm fields={fields} onSaved={handleSaved} />

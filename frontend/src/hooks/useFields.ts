@@ -1,82 +1,89 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { api } from '../services/api'
 import { toast } from 'react-toastify'
 import { isApiError } from '../utils/errorUtils'
-import { FieldsResponseSchema } from '../schemas'
-import type { Field } from '../types'
+import { FieldsResponseSchema } from '@/schemas' 
+import type { Field } from '@/types' 
 
 export function useFields() {
-  const [fields, setFields]   = useState<Field[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError]     = useState<string | null>(null)
+  const [fields, setFields] = useState<Field[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleError = (err: unknown) => {
+    let message = 'Unknown error'
+    if (isApiError(err)) {
+      message = err.response?.data?.message ?? message
+    } else if (err instanceof Error) {
+      message = err.message
+    }
+    setError(message)
+    toast.error(message)
+  }
 
   const fetchFields = useCallback(async () => {
     setLoading(true)
+    setError(null)
     try {
-      const res = await api.get('/campos')
+      const res = await api.get<Field[]>('/campos')
       const parsed = FieldsResponseSchema.safeParse(res.data)
       if (!parsed.success) {
-        console.error(parsed.error)
         throw new Error('Formato de campos inválido')
       }
       setFields(parsed.data)
-      setError(null)
-    } catch (err: unknown) {
-      const msg = isApiError(err)
-        ? err.response?.data?.message ?? 'Erro desconhecido'
-        : err instanceof Error
-          ? err.message
-          : 'Erro ao carregar campos'
-      setError(msg)
-      toast.error(msg)
+    } catch (err) {
+      handleError(err)
     } finally {
       setLoading(false)
     }
   }, [])
 
-  const deleteField = useCallback(async (id: string) => {
-    try {
-      await api.delete(`/campos/${id}`)
-      toast.success('Campo excluído com sucesso!')
-      await fetchFields()
-    } catch (err: unknown) {
-      const msg = isApiError(err)
-        ? err.response?.data?.message ?? 'Erro desconhecido'
-        : err instanceof Error
-          ? err.message
-          : 'Erro ao excluir campo'
-      toast.error(msg)
-    }
+  useEffect(() => {
+    fetchFields()
   }, [fetchFields])
 
-  const updateField = useCallback(
-    async (id: string, data: { name: string; datatype: string }) => {
+  const deleteField = useCallback(
+    async (id: string) => {
+      setLoading(true)
       try {
-        await api.put(`/campos/${id}`, data)
-        toast.success('Campo atualizado com sucesso!')
+        await api.delete(`/campos/${id}`)
+        toast.success('Campo excluído com sucesso!')
         await fetchFields()
-      } catch (err: unknown) {
-        const msg = isApiError(err)
-          ? err.response?.data?.message ?? 'Erro desconhecido'
-          : err instanceof Error
-            ? err.message
-            : 'Erro ao atualizar campo'
-        toast.error(msg)
+      } catch (err) {
+        handleError(err)
+      } finally {
+        setLoading(false)
       }
     },
     [fetchFields]
   )
 
-  useEffect(() => {
-    fetchFields()
+  const updateField = useCallback(
+    async (id: string, data: { name: string; datatype: Field['datatype'] }) => {
+      setLoading(true)
+      try {
+        await api.put(`/campos/${id}`, data)
+        toast.success('Campo atualizado com sucesso!')
+        await fetchFields()
+      } catch (err) {
+        handleError(err)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [fetchFields]
+  )
+
+  const refresh = useCallback(async () => {
+    await fetchFields()
   }, [fetchFields])
 
   return {
     fields,
     loading,
     error,
-    refresh: fetchFields,
     deleteField,
     updateField,
+    refresh,
   }
 }
