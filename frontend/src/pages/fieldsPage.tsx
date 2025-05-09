@@ -56,10 +56,8 @@ export default function FieldsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <p className="text-yellow-700 bg-neutral-900 p-3 rounded mb-4">
-            <strong>Atenção:</strong> ao trocar o tipo do campo, os
-            preenchimentos existentes permanecerão no tipo anterior e não serão
-            excluídos, mas não refletirão o novo tipo.
+          <p className="text-red-700 bg-neutral-900 p-3 rounded mb-4">
+            <strong>Atenção:</strong> Não é possível alterar o tipo de um campo que já possui preenchimentos. Apague-os ou crie um novo campo.
           </p>
 
           {editing && (
