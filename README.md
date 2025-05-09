@@ -5,11 +5,11 @@
 * Frontend - Vercel
 * Backend - Render
 
-## 📝 Descrição
+## Descrição
 
 Esta aplicação implementa um sistema de CRUD (Criar, Ler, Atualizar, Deletar) para gerenciar "campos" e seus respectivos "preenchimentos". A principal característica é que cada campo pode possuir múltiplos preenchimentos, e cada preenchimento é validado de acordo com um tipo de dado específico (ex: texto, número, data, etc.) associado ao campo ao qual pertence.
 
-## ✨ Funcionalidades Principais
+## Funcionalidades Principais
 
 * Criação, leitura, atualização e exclusão de Campos.
 * Criação, leitura, atualização e exclusão de Preenchimentos associados a Campos.
@@ -17,7 +17,7 @@ Esta aplicação implementa um sistema de CRUD (Criar, Ler, Atualizar, Deletar) 
 * Interface de usuário interativa para gerenciamento dos dados.
 * Documentação da API gerada automaticamente e acessível via Swagger.
 
-## 🛠️ Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 * **Backend:**
     * Node.js
@@ -28,6 +28,7 @@ Esta aplicação implementa um sistema de CRUD (Criar, Ler, Atualizar, Deletar) 
     * React
     * Tailwind CSS
     * Shadcn/ui
+    * Zod (para validação de dados)
     * Vitest (para testes)
 * **Containerização:**
     * Docker
@@ -35,7 +36,7 @@ Esta aplicação implementa um sistema de CRUD (Criar, Ler, Atualizar, Deletar) 
 * **Controle de Versão:**
     * Git
 
-## ⚙️ Pré-requisitos
+## Pré-requisitos
 
 Antes de começar, você vai precisar ter instalado em sua máquina:
 
@@ -43,7 +44,7 @@ Antes de começar, você vai precisar ter instalado em sua máquina:
 * [Docker](https://www.docker.com/get-started)
 * [Git](https://git-scm.com/)
 
-## 🚀 Como Instalar e Executar
+## Como Instalar e Executar
 
 1.  **Clone o repositório:**
     ```bash
@@ -66,7 +67,7 @@ Antes de começar, você vai precisar ter instalado em sua máquina:
         touch .env
         cp .env.example .env
         ```
-    * Suba os containers Docker (isso irá construir a imagem e iniciar o serviço do backend e o banco de dados, se configurado no `docker-compose.yml`):
+    * Suba os containers Docker (isso irá construir a imagem e iniciar o serviço do backend e o banco de dados, configurados em `docker-compose.yml`):
         ```bash
         docker compose up --build
         ```
@@ -98,12 +99,12 @@ Antes de começar, você vai precisar ter instalado em sua máquina:
     npm run test
 
 
-## 🧪 Executando os Testes
+## Executando os Testes
 
 Para rodar os testes automatizados:
 
 * **Backend (Jest):**
-    No diretório `backend/`:
+    No diretório `backend/src`:
     ```bash
     npm run test
     ```
@@ -114,7 +115,7 @@ Para rodar os testes automatizados:
     npm run test
     ```
 
-## 📄 Documentação da API
+## Documentação da API
 
 A documentação dos endpoints da API (gerada com Swagger/OpenAPI) está disponível em:
 
