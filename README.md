@@ -1,6 +1,9 @@
 # Teste Técnico Brasão Sistemas
 
 **Status do Projeto:** Finalizado ✔️
+## Link [Produção](https://node-react-brasao-v37a.vercel.app/)
+Frontend - Vercel
+Backend - Render
 
 ## 📝 Descrição
 
