@@ -3,7 +3,7 @@ import { render, screen, waitFor, act, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom";
 
-import FieldsPage from "../src/pages/FieldsPage";
+import FieldsPage from "../src/pages/fieldsPage";
 import type { Field } from "../src/types";
 import React from "react";
 

@@ -6,8 +6,8 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import FieldsPage from "./pages/FieldsPage";
-import FillsPage from "./pages/FillsPage";
+import FieldsPage from "./pages/fieldsPage";
+import FillsPage from "./pages/fillsPage";
 import { ToastContainer } from "react-toastify";
 
 interface ThemeContextType {

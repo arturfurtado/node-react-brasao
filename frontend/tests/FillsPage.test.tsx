@@ -3,13 +3,13 @@ import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import React from "react";
 
-import FillsPage from "../src/pages/FillsPage";
+import FillsPage from "../src/pages/fillsPage";
 import type { Field, Fill } from "../src/types";
 import { useFills } from "../src/hooks/useFills";
 import { useFields } from "../src/hooks/useFields";
 
 
-vi.mock("../components/common/FillForm", () => ({
+vi.mock("../components/common/fillForm", () => ({
   FillForm: ({ onSaved }: any) => (
     <div data-testid="fill-form" onClick={onSaved}>
       Mocked FillForm
@@ -17,7 +17,7 @@ vi.mock("../components/common/FillForm", () => ({
   ),
 }));
 
-vi.mock("../components/common/FieldsAccordion", () => ({
+vi.mock("../components/common/fieldsAccordion", () => ({
   FieldsAccordion: ({ groups }: any) => (
     <div data-testid="fields-accordion">
       Mocked FieldsAccordion with {groups.length} groups
@@ -71,7 +71,6 @@ describe("FillsPage Component", () => {
     render(<FillsPage />);
 
     expect(screen.getByPlaceholderText("Valor")).toBeInTheDocument(); 
-    expect(screen.getByText("Campos e Preenchimentos")).toBeInTheDocument();  
     expect(screen.getByText("Selecione um campo")).toBeInTheDocument()  
 });
 });

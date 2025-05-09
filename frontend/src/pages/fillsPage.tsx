@@ -1,11 +1,11 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useFields } from '../hooks/useFields';
 import { useFills } from '../hooks/useFills';
-import { FillForm } from '../components/common/FillForm';
+import { FillForm } from '../components/common/fillForm';
 import {
   FieldsAccordion,
   type AccordionGroup,
-} from '../components/common/FieldsAccordion';
+} from '../components/common/fieldsAccordion';
 import type { Fill } from '../types';
 
 import {

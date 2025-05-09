@@ -6,7 +6,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-import { FieldsTable } from '../src/components/common/FieldsTable';
+import { FieldsTable } from '../src/components/common/fieldsTable';
 import type { Field } from '../src/types';
 
 import { formatDate } from '../src/utils/formatDate';

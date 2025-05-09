@@ -6,7 +6,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom'; 
 import type { MockedFunction } from 'vitest';
-import { FieldsAccordion, type AccordionGroup } from '../src/components/common/FieldsAccordion';
+import { FieldsAccordion, type AccordionGroup } from '../src/components/common/fieldsAccordion';
 import { formatDate } from '../src/utils/formatDate'; 
 import React from 'react';
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useFields } from "../hooks/useFields";
-import { FieldForm } from "../components/common/FieldForm";
-import { FieldsTable } from "../components/common/FieldsTable";
+import { FieldForm } from "../components/common/fieldForm";
+import { FieldsTable } from "../components/common/fieldsTable";
 import type { Field } from "../types";
 
 import {

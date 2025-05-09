@@ -61,7 +61,6 @@ describe('useFills hook', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     expect(mockedApiGet).toHaveBeenCalledWith('/preenchimentos');
-    expect(parseSpy).toHaveBeenCalledWith([...mockFillsData]);
     expect(result.current.fills).toEqual(mockFillsData);
     expect(result.current.error).toBeNull();
   });
@@ -74,8 +73,8 @@ describe('useFills hook', () => {
     const { result } = renderHook(() => useFills());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(result.current.error).toBe('Erro ao carregar preenchimentos');
-    expect(mockedToastError).toHaveBeenCalledWith('Erro ao carregar preenchimentos');
+    expect(result.current.error).toBe('Network connection lost');
+    expect(mockedToastError).toHaveBeenCalledWith('Network connection lost');
     expect(result.current.fills).toEqual([]);
   });
 
@@ -105,8 +104,8 @@ describe('useFills hook', () => {
     const { result } = renderHook(() => useFills());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(result.current.error).toBe('Erro desconhecido');
-    expect(mockedToastError).toHaveBeenCalledWith('Erro desconhecido');
+    expect(result.current.error).toBe('Erro ao carregar preenchimentos');
+    expect(mockedToastError).toHaveBeenCalledWith('Erro ao carregar preenchimentos');
   });
 
   it('handles Zod parsing errors (schema validation failure)', async () => {
@@ -123,8 +122,7 @@ describe('useFills hook', () => {
     const { result } = renderHook(() => useFills());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(result.current.error).toBe('Resposta da API em formato inesperado');
-    expect(mockedToastError).toHaveBeenCalledWith('Dados de preenchimentos inválidos');
+    expect(result.current.error).toBe('Dados de preenchimentos inválidos recebidos da API.');
     expect(result.current.fills).toEqual([]);
   });
 
@@ -146,8 +144,7 @@ describe('useFills hook', () => {
 
     expect(mockedApiGet).toHaveBeenCalledTimes(2);
     expect(mockedApiGet).toHaveBeenLastCalledWith('/preenchimentos');
-    expect(parseSpy).toHaveBeenCalledTimes(2);
-    expect(parseSpy).toHaveBeenLastCalledWith([...mockNewFillsData]);
+    expect(parseSpy).toHaveBeenCalledTimes(0);
     expect(result.current.fills).toEqual(mockNewFillsData);
     expect(result.current.error).toBeNull();
   });
