@@ -140,7 +140,7 @@ export function FillForm({
         toast.error("O valor deve ser 'true' ou 'false'.");
         return;
       }
-      submissionData.value = raw === "true";
+      submissionData.value = raw;
     } else if (selectedField?.datatype === "number") {
       submissionData.value = parseFloat(data.value);
     } else if (selectedField?.datatype === "date") {
