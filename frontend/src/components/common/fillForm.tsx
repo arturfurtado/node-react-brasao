@@ -1,17 +1,12 @@
-import { useEffect, useState, useMemo } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { FillPostSchema } from '../../schemas';
-import { z } from 'zod';
-import { api } from '../../services/api';
-import { toast } from 'react-toastify';
-import { isApiError } from '../../utils/errorUtils';
-import type { Field, Fill } from '../../types';
-import { CalendarIcon } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { format, parse } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { useEffect, useState, useMemo } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { api } from "../../services/api";
+import { toast } from "react-toastify";
+import { isApiError } from "../../utils/errorUtils";
+import type { Field, Fill } from "../../types";
+import { parse } from "date-fns";
 
 type FillFormProps = {
   fields: Field[];
@@ -20,48 +15,75 @@ type FillFormProps = {
   onCancelEdit?: () => void;
 };
 
-const createDynamicFillSchema = (selectedFieldType?: Field['datatype']) => {
+const createDynamicFillSchema = (selectedFieldType?: Field["datatype"]) => {
   let valueSchema;
   switch (selectedFieldType) {
-    case 'date':
-      valueSchema = z.date({
-        required_error: "A data é obrigatória.",
-        invalid_type_error: "Data inválida.",
-      });
-      break;
-    case 'number':
+    case "date":
       valueSchema = z
         .string()
-        .min(1, 'O valor é obrigatório.')
+        .min(10, "A data deve estar no formato DD/MM/AAAA e ter 10 caracteres.")
+        .max(10, "A data deve estar no formato DD/MM/AAAA e ter 10 caracteres.")
+        .regex(
+          /^\d{2}\/\d{2}\/\d{4}$/,
+          "Formato de data inválido. Use DD/MM/AAAA."
+        )
+        .refine(
+          (dateStr) => {
+            const [day, month, year] = dateStr.split("/").map(Number);
+            const dateObj = new Date(year, month - 1, day);
+            return (
+              dateObj.getFullYear() === year &&
+              dateObj.getMonth() === month - 1 &&
+              dateObj.getDate() === day
+            );
+          },
+          {
+            message: "Data inválida (ex: 30/02/2024 ou data não existente).",
+          }
+        );
+      break;
+    case "number":
+      valueSchema = z
+        .string()
+        .min(1, "O valor é obrigatório.")
         .refine((value) => !isNaN(parseFloat(value)), {
-          message: 'Deve ser um número válido.',
+          message: "Deve ser um número válido.",
         })
         .transform((value) => parseFloat(value));
       break;
-    case 'boolean':
-      valueSchema = z.enum(['true', 'false'], {
-        errorMap: () => ({ message: 'Selecione verdadeiro ou falso' }),
+    case "boolean":
+      valueSchema = z.enum(["true", "false"], {
+        errorMap: () => ({ message: "Selecione verdadeiro ou falso" }),
       });
       break;
     default:
-      valueSchema = z.string().min(1, 'O valor é obrigatório.');
+      valueSchema = z.string().min(1, "O valor é obrigatório.");
   }
 
   return z.object({
-    fieldId: z.string().min(1, 'Selecione um campo.'),
+    fieldId: z.string().min(1, "Selecione um campo."),
     value: valueSchema,
   });
 };
 
-export function FillForm({ fields, onSaved, editingFill, onCancelEdit }: FillFormProps) {
-  const [selectedFieldId, setSelectedFieldId] = useState<string>(editingFill?.fieldId || '');
+export function FillForm({
+  fields,
+  onSaved,
+  editingFill,
+  onCancelEdit,
+}: FillFormProps) {
+  const [selectedFieldId, setSelectedFieldId] = useState<string>(
+    editingFill?.fieldId || ""
+  );
 
   const selectedField = useMemo(() => {
     return fields.find((f) => f.id === selectedFieldId);
   }, [fields, selectedFieldId]);
 
   const dynamicSchema = useMemo(() => {
-    return createDynamicFillSchema(selectedField?.datatype as Field['datatype']);
+    return createDynamicFillSchema(
+      selectedField?.datatype as Field["datatype"]
+    );
   }, [selectedField]);
 
   const {
@@ -78,36 +100,36 @@ export function FillForm({ fields, onSaved, editingFill, onCancelEdit }: FillFor
       ? {
           fieldId: editingFill.fieldId,
           value:
-            editingFill.field?.datatype === 'date'
-              ? parse(editingFill.value, 'dd/MM/yyyy', new Date())
-              : editingFill.field?.datatype === 'boolean'
+            editingFill.field?.datatype === "date"
+              ? parse(editingFill.value, "dd/MM/yyyy", new Date())
+              : editingFill.field?.datatype === "boolean"
               ? String(editingFill.value)
               : editingFill.value,
         }
       : {
-          fieldId: '',
-          value: '',
+          fieldId: "",
+          value: "",
         },
   });
 
-  const watchedFieldId = watch('fieldId');
+  const watchedFieldId = watch("fieldId");
 
   useEffect(() => {
     setSelectedFieldId(watchedFieldId);
     if (!editingFill || watchedFieldId !== editingFill.fieldId) {
-      setValue('value', '', { shouldValidate: false });
+      setValue("value", "", { shouldValidate: false });
     }
   }, [watchedFieldId, setValue, editingFill]);
 
   useEffect(() => {
     const defaultFieldValue =
       editingFill && editingFill.fieldId === selectedFieldId
-        ? selectedField?.datatype === 'date'
-          ? parse(editingFill.value, 'dd/MM/yyyy', new Date())
-          : selectedField?.datatype === 'boolean'
+        ? selectedField?.datatype === "date"
+          ? parse(editingFill.value, "dd/MM/yyyy", new Date())
+          : selectedField?.datatype === "boolean"
           ? String(editingFill.value)
           : editingFill.value
-        : '';
+        : "";
 
     reset(
       {
@@ -120,15 +142,15 @@ export function FillForm({ fields, onSaved, editingFill, onCancelEdit }: FillFor
 
   const onSubmit = async (data: any) => {
     let submissionData = { ...data };
-
-    if (selectedField?.datatype === 'date' && data.value instanceof Date) {
-      submissionData.value = format(data.value, 'dd/MM/yyyy');
+  
+    if (selectedField?.datatype === 'date') {
+      submissionData.value = data.value;
     } else if (selectedField?.datatype === 'number') {
       submissionData.value = parseFloat(data.value);
     } else if (selectedField?.datatype === 'boolean') {
       submissionData.value = data.value === 'true';
     }
-
+  
     try {
       if (editingFill) {
         await api.put(`/preenchimentos/${editingFill.id}`, submissionData);
@@ -164,49 +186,28 @@ export function FillForm({ fields, onSaved, editingFill, onCancelEdit }: FillFor
     }
 
     switch (selectedField.datatype) {
-      case 'date':
-        return (
-          <Controller
-            name="value"
-            control={control}
-            render={({ field }) => (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    className={cn(
-                      'w-full border p-2 rounded text-left',
-                      !field.value && 'text-muted-foreground'
-                    )}
-                    disabled={isSubmitting}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4 inline" />
-                    {field.value ? format(field.value, 'dd/MM/yyyy') : 'Escolha uma data'}
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            )}
-          />
-        );
-      case 'number':
+      case "date":
         return (
           <input
-            {...register('value')}
+            {...register("value")}
+            type="text"
+            placeholder="dd/MM/yyyy"
+            className="border p-2 rounded w-full"
+            disabled={isSubmitting}
+          />
+        );
+
+      case "number":
+        return (
+          <input
+            {...register("value")}
             type="number"
             placeholder="Valor numérico"
             className="border p-2 rounded w-full"
             disabled={isSubmitting}
           />
         );
-      case 'boolean':
+      case "boolean":
         return (
           <Controller
             name="value"
@@ -229,7 +230,7 @@ export function FillForm({ fields, onSaved, editingFill, onCancelEdit }: FillFor
       default:
         return (
           <input
-            {...register('value')}
+            {...register("value")}
             type="text"
             placeholder="Valor"
             className="border p-2 rounded w-full"
@@ -246,7 +247,7 @@ export function FillForm({ fields, onSaved, editingFill, onCancelEdit }: FillFor
     >
       <div>
         <select
-          {...register('fieldId')}
+          {...register("fieldId")}
           className="border p-2 rounded w-full dark:bg-zinc-800"
           disabled={isSubmitting || !!editingFill}
         >
@@ -283,11 +284,11 @@ export function FillForm({ fields, onSaved, editingFill, onCancelEdit }: FillFor
         >
           {isSubmitting
             ? editingFill
-              ? 'Atualizando…'
-              : 'Salvando…'
+              ? "Atualizando…"
+              : "Salvando…"
             : editingFill
-            ? 'Atualizar'
-            : 'Salvar Preenchimento'}
+            ? "Atualizar"
+            : "Salvar Preenchimento"}
         </button>
         {editingFill && onCancelEdit && (
           <button
