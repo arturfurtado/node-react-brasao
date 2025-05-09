@@ -121,22 +121,3 @@ A documentação dos endpoints da API (gerada com Swagger/OpenAPI) está dispon�
 * [http://localhost:4000/docs](http://localhost:4000/docs)
 
 (Após o backend estar em execução)
-
-## 📁 Estrutura do Projeto (Simplificada)
-node-react-brasao/
-├── backend/                # Código-fonte do servidor Node.js/Express com TypeScript
-│   ├── src/                # Lógica principal da aplicação (controllers, services, models, etc.)
-│   ├── api/                # Arquivos de configuração/definição da API (ex: rotas)
-│   ├── Dockerfile          # Definição da imagem Docker para o backend
-│   ├── docker-compose.yml  # Orquestração dos containers Docker
-│   ├── jest.config.js      # Configuração dos testes com Jest
-│   └── tsconfig.json       # Configuração do TypeScript para o backend
-│   └── ...
-├── frontend/               # Código-fonte da aplicação React com TypeScript (Vite)
-│   ├── src/                # Componentes React, páginas, lógica do frontend
-│   ├── public/             # Arquivos estáticos (imagens, fontes, etc.)
-│   ├── tests/              # Arquivos de teste do frontend com Vitest
-│   ├── vite.config.ts      # Configuração do Vite
-│   └── tsconfig.json       # Configuração do TypeScript para o frontend
-│   └── ...
-└── README.md
