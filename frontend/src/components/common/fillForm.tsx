@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { api } from "../../services/api";
@@ -23,24 +23,18 @@ const createDynamicFillSchema = (selectedFieldType?: Field["datatype"]) => {
         .string()
         .min(10, "A data deve estar no formato DD/MM/AAAA e ter 10 caracteres.")
         .max(10, "A data deve estar no formato DD/MM/AAAA e ter 10 caracteres.")
-        .regex(
-          /^\d{2}\/\d{2}\/\d{4}$/,
-          "Formato de data inválido. Use DD/MM/AAAA."
-        )
-        .refine(
-          (dateStr) => {
-            const [day, month, year] = dateStr.split("/").map(Number);
-            const dateObj = new Date(year, month - 1, day);
-            return (
-              dateObj.getFullYear() === year &&
-              dateObj.getMonth() === month - 1 &&
-              dateObj.getDate() === day
-            );
-          },
-          {
-            message: "Data inválida (ex: 30/02/2024 ou data não existente).",
-          }
-        );
+        .regex(/^\d{2}\/\d{2}\/\d{4}$/, "Formato de data inválido. Use DD/MM/AAAA.")
+        .refine((dateStr) => {
+          const [day, month, year] = dateStr.split("/").map(Number);
+          const dateObj = new Date(year, month - 1, day);
+          return (
+            dateObj.getFullYear() === year &&
+            dateObj.getMonth() === month - 1 &&
+            dateObj.getDate() === day
+          );
+        }, {
+          message: "Data inválida (ex: 30/02/2024 ou data não existente)."
+        });
       break;
     case "number":
       valueSchema = z
@@ -52,9 +46,7 @@ const createDynamicFillSchema = (selectedFieldType?: Field["datatype"]) => {
         .transform((value) => parseFloat(value));
       break;
     case "boolean":
-      valueSchema = z.enum(["true", "false"], {
-        errorMap: () => ({ message: "Selecione verdadeiro ou falso" }),
-      });
+      valueSchema = z.string().optional();
       break;
     default:
       valueSchema = z.string().min(1, "O valor é obrigatório.");
@@ -87,7 +79,6 @@ export function FillForm({
   }, [selectedField]);
 
   const {
-    control,
     register,
     handleSubmit,
     reset,
@@ -142,22 +133,27 @@ export function FillForm({
 
   const onSubmit = async (data: any) => {
     let submissionData = { ...data };
-  
-    if (selectedField?.datatype === 'date') {
-      submissionData.value = data.value;
-    } else if (selectedField?.datatype === 'number') {
+
+    if (selectedField?.datatype === "boolean") {
+      const raw = data.value?.toLowerCase();
+      if (raw !== "true" && raw !== "false") {
+        toast.error("O valor deve ser 'true' ou 'false'.");
+        return;
+      }
+      submissionData.value = raw === "true";
+    } else if (selectedField?.datatype === "number") {
       submissionData.value = parseFloat(data.value);
-    } else if (selectedField?.datatype === 'boolean') {
-      submissionData.value = data.value === 'true';
+    } else if (selectedField?.datatype === "date") {
+      submissionData.value = data.value;
     }
-  
+
     try {
       if (editingFill) {
         await api.put(`/preenchimentos/${editingFill.id}`, submissionData);
-        toast.success('Preenchimento atualizado com sucesso!');
+        toast.success("Preenchimento atualizado com sucesso!");
       } else {
-        await api.post('/preenchimentos', submissionData);
-        toast.success('Preenchimento salvo com sucesso!');
+        await api.post("/preenchimentos", submissionData);
+        toast.success("Preenchimento salvo com sucesso!");
       }
       onSaved();
       if (editingFill && onCancelEdit) {
@@ -165,10 +161,10 @@ export function FillForm({
       }
     } catch (err: unknown) {
       const msg = isApiError(err)
-        ? err.response?.data?.message ?? 'Erro desconhecido'
+        ? err.response?.data?.message ?? "Erro desconhecido"
         : editingFill
-        ? 'Erro ao atualizar preenchimento'
-        : 'Erro ao salvar preenchimento';
+        ? "Erro ao atualizar preenchimento"
+        : "Erro ao salvar preenchimento";
       toast.error(msg);
     }
   };
@@ -196,7 +192,6 @@ export function FillForm({
             disabled={isSubmitting}
           />
         );
-
       case "number":
         return (
           <input
@@ -209,22 +204,11 @@ export function FillForm({
         );
       case "boolean":
         return (
-          <Controller
-            name="value"
-            control={control}
-            render={({ field }) => (
-              <select
-                {...field}
-                className="border p-2 rounded w-full dark:bg-zinc-800"
-                disabled={isSubmitting}
-              >
-                <option value="" disabled>
-                  Selecione uma opção
-                </option>
-                <option value="true">Verdadeiro</option>
-                <option value="false">Falso</option>
-              </select>
-            )}
+          <input
+            {...register("value")}
+            placeholder="Digite 'true' ou 'false'"
+            className="border p-2 rounded w-full"
+            disabled={isSubmitting}
           />
         );
       default:
@@ -269,7 +253,7 @@ export function FillForm({
 
       <div>
         {renderValueInput()}
-        {errors.value && (
+        {errors.value && selectedField?.datatype !== "boolean" && (
           <p className="text-red-600 text-sm mt-1">
             {(errors.value as any).message}
           </p>
