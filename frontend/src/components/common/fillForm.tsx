@@ -43,7 +43,6 @@ const createDynamicFillSchema = (selectedFieldType?: Field["datatype"]) => {
         .refine((value) => !isNaN(parseFloat(value)), {
           message: "Deve ser um número válido.",
         })
-        .transform((value) => parseFloat(value));
       break;
     case "boolean":
       valueSchema = z.string().optional();
@@ -142,9 +141,9 @@ export function FillForm({
       }
       submissionData.value = raw;
     } else if (selectedField?.datatype === "number") {
-      submissionData.value = parseFloat(data.value);
-    } else if (selectedField?.datatype === "date") {
       submissionData.value = data.value;
+    } else if (selectedField?.datatype === "date") {
+      submissionData.value = String(data.value);
     }
 
     try {
@@ -196,7 +195,6 @@ export function FillForm({
         return (
           <input
             {...register("value")}
-            type="number"
             placeholder="Valor numérico"
             className="border p-2 rounded w-full"
             disabled={isSubmitting}
