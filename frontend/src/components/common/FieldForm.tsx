@@ -85,7 +85,7 @@ export function FieldForm({
       <div>
         <select
           {...register('datatype')}
-          className="border p-2 rounded w-full"
+          className="border p-2 rounded w-full dark:bg-zinc-800"
           disabled={isSubmitting}
         >
           <option value="string">String</option>
@@ -97,7 +97,7 @@ export function FieldForm({
           <p className="text-red-600 text-sm mt-1">{errors.datatype.message}</p>
         )}
       </div>
-      <div className="md:col-span-2">
+      <div>
         <button
           type="submit"
           className="bg-zinc-900 text-white p-2 rounded w-full disabled:opacity-50"
