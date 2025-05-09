@@ -1,12 +1,14 @@
-// jest.config.js
-/** @type {import('ts-jest').JestConfigWithTsJest} */
-module.exports = {
-  preset: 'ts-jest',               
-  testEnvironment: 'node',
+export default {
+  testEnvironment: 'jsdom',
+
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest'    // arquivos .ts/.tsx via ts-jest
+    '^.+\\.[tj]sx?$': [
+      'ts-jest',
+      {
+        tsconfig: '<rootDir>/tsconfig.test.json',
+        useESM: true,
+      },
+    ],
   },
-  testPathIgnorePatterns: [
-    '/dist/',                       // ignora todo o dist/
-  ],
 };
