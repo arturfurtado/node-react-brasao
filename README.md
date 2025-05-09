@@ -44,7 +44,8 @@ Antes de começar, você vai precisar ter instalado em sua máquina:
 
 1.  **Clone o repositório:**
     ```bash
-    git clone [https://github.com/arturfurtado/node-react-brasao.git](https://github.com/arturfurtado/node-react-brasao.git)
+    git clone https://github.com/arturfurtado/node-react-brasao.git
+
     cd node-react-brasao
     ```
 
@@ -57,11 +58,21 @@ Antes de começar, você vai precisar ter instalado em sua máquina:
         ```bash
         npm install
         ```
+        Crie um arquivo .env e copie a .env.example para facilitar o processo:
+        ```bash
+        touch .env
+        cp .env.example .env
+        ```
     * Suba os containers Docker (isso irá construir a imagem e iniciar o serviço do backend e o banco de dados, se configurado no `docker-compose.yml`):
         ```bash
         docker compose up --build
         ```
     O backend estará rodando em `http://localhost:4000`.
+
+    Para rodar os testes, acesse o diretório `backend/src/` e execute:
+    ```bash
+    npm run test
+
 
 3.  **Frontend:**
     * Em um **novo terminal**, navegue até a pasta do frontend (a partir da raiz do projeto `node-react-brasao`):
@@ -78,6 +89,11 @@ Antes de começar, você vai precisar ter instalado em sua máquina:
         npm run dev
         ```
     A aplicação frontend estará acessível em `http://localhost:5173` (ou outra porta indicada pelo Vite).
+
+    Para rodar os testes, acesse o diretório `frontend/` e execute:
+    ```bash
+    npm run test
+
 
 ## 🧪 Executando os Testes
 
