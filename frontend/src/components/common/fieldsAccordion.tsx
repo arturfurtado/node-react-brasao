@@ -1,11 +1,11 @@
-import type { Fill, Field } from "../../types";
-import { formatDate } from "../../utils/formatDate";
+import type { Fill, Field } from '../../types';
+import { formatDate } from '../../utils/formatDate';
 import {
   Accordion,
   AccordionItem,
   AccordionTrigger,
   AccordionContent,
-} from "@/components/ui/accordion";
+} from '@/components/ui/accordion';
 import {
   Table,
   TableHeader,
@@ -13,16 +13,16 @@ import {
   TableBody,
   TableRow,
   TableCell,
-} from "@/components/ui/table";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Edit2, Trash2 } from "lucide-react";
+} from '@/components/ui/table';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Edit2, Trash2 } from 'lucide-react'; 
 
 export type AccordionGroup = Field & { fills: Fill[] };
 
 type FieldsAccordionProps = {
   groups: AccordionGroup[];
-  onEditFill: (fill: Fill) => void;
-  onDeleteFill: (fillId: string) => void;
+  onEditFill: (fill: Fill) => void; 
+  onDeleteFill: (fillId: string) => void; 
 };
 
 export function FieldsAccordion({
@@ -44,7 +44,7 @@ export function FieldsAccordion({
               </div>
               <div className="text-sm text-gray-500">
                 {field.fills.length} preenchimento
-                {field.fills.length !== 1 && "s"}
+                {field.fills.length !== 1 && 's'}
               </div>
             </AccordionTrigger>
             <AccordionContent className="p-0">
