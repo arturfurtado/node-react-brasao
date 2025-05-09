@@ -70,9 +70,7 @@ export default function FieldsPage() {
             />
           )}
 
-          <DialogClose className="absolute top-4 right-4" aria-label="Fechar">
-            ×
-          </DialogClose>
+          <DialogClose className="absolute top-4 right-4" aria-label="Fechar"/>
         </DialogContent>
       </Dialog>
     </div>

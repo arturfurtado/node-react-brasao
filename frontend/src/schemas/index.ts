@@ -34,6 +34,31 @@ export const FieldPostSchema = z.object({
   name: z.string().min(1, 'O nome do campo é obrigatório.'), 
   datatype: DataTypeEnum, 
 });
+
+
+export const DateStringDDMMYYYYSchema = z.string()
+  .min(10, 'A data deve estar no formato DD/MM/AAAA e ter 10 caracteres.')
+  .max(10, 'A data deve estar no formato DD/MM/AAAA e ter 10 caracteres.')
+  .regex(/^\d{2}\/\d{2}\/\d{4}$/, 'Formato de data inválido. Use DD/MM/AAAA.')
+  .refine((dateStr) => {
+    const parts = dateStr.split('/');
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10);
+    const year = parseInt(parts[2], 10);
+
+    if (month < 1 || month > 12 || day < 1 || day > 31 || year < 1000 || year > 3000) {
+      return false;
+    }
+    const dateObj = new Date(year, month - 1, day);
+    return (
+      dateObj.getFullYear() === year &&
+      dateObj.getMonth() === month - 1 &&
+      dateObj.getDate() === day
+    );
+  }, {
+    message: 'Data inválida (ex: 30/02/2024 ou data não existente).',
+  });
+
 export type FieldPost = z.infer<typeof FieldPostSchema>;
 
 export const FieldsResponseSchema = z.array(FieldSchema);

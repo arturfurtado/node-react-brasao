@@ -1,65 +1,140 @@
-import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useEffect, useState, useMemo } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FillPostSchema } from '../../schemas';
-import type { z } from 'zod';
+import { z } from 'zod';
 import { api } from '../../services/api';
 import { toast } from 'react-toastify';
 import { isApiError } from '../../utils/errorUtils';
-import type { Field, Fill } from '../../types'; 
-
-type FormData = z.infer<typeof FillPostSchema>;
+import type { Field, Fill } from '../../types';
+import { CalendarIcon } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format, parse } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 type FillFormProps = {
   fields: Field[];
   onSaved: () => void;
-  editingFill?: Fill; 
-  onCancelEdit?: () => void; 
+  editingFill?: Fill;
+  onCancelEdit?: () => void;
 };
 
-export function FillForm({
-  fields,
-  onSaved,
-  editingFill,
-  onCancelEdit,
-}: FillFormProps) {
+const createDynamicFillSchema = (selectedFieldType?: Field['datatype']) => {
+  let valueSchema;
+  switch (selectedFieldType) {
+    case 'date':
+      valueSchema = z.date({
+        required_error: "A data é obrigatória.",
+        invalid_type_error: "Data inválida.",
+      });
+      break;
+    case 'number':
+      valueSchema = z
+        .string()
+        .min(1, 'O valor é obrigatório.')
+        .refine((value) => !isNaN(parseFloat(value)), {
+          message: 'Deve ser um número válido.',
+        })
+        .transform((value) => parseFloat(value));
+      break;
+    case 'boolean':
+      valueSchema = z.enum(['true', 'false'], {
+        errorMap: () => ({ message: 'Selecione verdadeiro ou falso' }),
+      });
+      break;
+    default:
+      valueSchema = z.string().min(1, 'O valor é obrigatório.');
+  }
+
+  return z.object({
+    fieldId: z.string().min(1, 'Selecione um campo.'),
+    value: valueSchema,
+  });
+};
+
+export function FillForm({ fields, onSaved, editingFill, onCancelEdit }: FillFormProps) {
+  const [selectedFieldId, setSelectedFieldId] = useState<string>(editingFill?.fieldId || '');
+
+  const selectedField = useMemo(() => {
+    return fields.find((f) => f.id === selectedFieldId);
+  }, [fields, selectedFieldId]);
+
+  const dynamicSchema = useMemo(() => {
+    return createDynamicFillSchema(selectedField?.datatype as Field['datatype']);
+  }, [selectedField]);
+
   const {
+    control,
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors, isSubmitting },
-  } = useForm<FormData>({
-    resolver: zodResolver(FillPostSchema),
+    setValue,
+  } = useForm<any>({
+    resolver: zodResolver(dynamicSchema),
     defaultValues: editingFill
       ? {
           fieldId: editingFill.fieldId,
-          value: editingFill.value,
+          value:
+            editingFill.field?.datatype === 'date'
+              ? parse(editingFill.value, 'dd/MM/yyyy', new Date())
+              : editingFill.field?.datatype === 'boolean'
+              ? String(editingFill.value)
+              : editingFill.value,
         }
       : {
-          fieldId: '', 
+          fieldId: '',
           value: '',
         },
   });
 
-  useEffect(() => {
-    if (editingFill) {
-      reset({
-        fieldId: editingFill.fieldId,
-        value: editingFill.value,
-      });
-    } else {
-      
-      reset({ fieldId: '', value: '' });
-    }
-  }, [editingFill, reset]);
+  const watchedFieldId = watch('fieldId');
 
-  const onSubmit = async (data: FormData) => {
+  useEffect(() => {
+    setSelectedFieldId(watchedFieldId);
+    if (!editingFill || watchedFieldId !== editingFill.fieldId) {
+      setValue('value', '', { shouldValidate: false });
+    }
+  }, [watchedFieldId, setValue, editingFill]);
+
+  useEffect(() => {
+    const defaultFieldValue =
+      editingFill && editingFill.fieldId === selectedFieldId
+        ? selectedField?.datatype === 'date'
+          ? parse(editingFill.value, 'dd/MM/yyyy', new Date())
+          : selectedField?.datatype === 'boolean'
+          ? String(editingFill.value)
+          : editingFill.value
+        : '';
+
+    reset(
+      {
+        fieldId: selectedFieldId,
+        value: defaultFieldValue,
+      },
+      {}
+    );
+  }, [dynamicSchema, reset, editingFill, selectedFieldId, selectedField]);
+
+  const onSubmit = async (data: any) => {
+    let submissionData = { ...data };
+
+    if (selectedField?.datatype === 'date' && data.value instanceof Date) {
+      submissionData.value = format(data.value, 'dd/MM/yyyy');
+    } else if (selectedField?.datatype === 'number') {
+      submissionData.value = parseFloat(data.value);
+    } else if (selectedField?.datatype === 'boolean') {
+      submissionData.value = data.value === 'true';
+    }
+
     try {
       if (editingFill) {
-        await api.put(`/preenchimentos/${editingFill.id}`, data);
+        await api.put(`/preenchimentos/${editingFill.id}`, submissionData);
         toast.success('Preenchimento atualizado com sucesso!');
       } else {
-        await api.post('/preenchimentos', data);
+        await api.post('/preenchimentos', submissionData);
         toast.success('Preenchimento salvo com sucesso!');
       }
       onSaved();
@@ -76,6 +151,94 @@ export function FillForm({
     }
   };
 
+  const renderValueInput = () => {
+    if (!selectedField) {
+      return (
+        <input
+          type="text"
+          placeholder="Selecione um campo primeiro"
+          className="border p-2 rounded w-full bg-gray-100 dark:bg-zinc-800"
+          disabled
+        />
+      );
+    }
+
+    switch (selectedField.datatype) {
+      case 'date':
+        return (
+          <Controller
+            name="value"
+            control={control}
+            render={({ field }) => (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className={cn(
+                      'w-full border p-2 rounded text-left',
+                      !field.value && 'text-muted-foreground'
+                    )}
+                    disabled={isSubmitting}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4 inline" />
+                    {field.value ? format(field.value, 'dd/MM/yyyy') : 'Escolha uma data'}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
+          />
+        );
+      case 'number':
+        return (
+          <input
+            {...register('value')}
+            type="number"
+            placeholder="Valor numérico"
+            className="border p-2 rounded w-full"
+            disabled={isSubmitting}
+          />
+        );
+      case 'boolean':
+        return (
+          <Controller
+            name="value"
+            control={control}
+            render={({ field }) => (
+              <select
+                {...field}
+                className="border p-2 rounded w-full dark:bg-zinc-800"
+                disabled={isSubmitting}
+              >
+                <option value="" disabled>
+                  Selecione uma opção
+                </option>
+                <option value="true">Verdadeiro</option>
+                <option value="false">Falso</option>
+              </select>
+            )}
+          />
+        );
+      default:
+        return (
+          <input
+            {...register('value')}
+            type="text"
+            placeholder="Valor"
+            className="border p-2 rounded w-full"
+            disabled={isSubmitting}
+          />
+        );
+    }
+  };
+
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
@@ -85,33 +248,29 @@ export function FillForm({
         <select
           {...register('fieldId')}
           className="border p-2 rounded w-full dark:bg-zinc-800"
-          disabled={isSubmitting || !!editingFill} 
+          disabled={isSubmitting || !!editingFill}
         >
-          <option value="">Selecione um campo</option>
+          <option value="" disabled>
+            Selecione um campo
+          </option>
           {fields.map((f) => (
             <option key={f.id} value={f.id}>
-              {f.name}
+              {f.name} ({f.datatype})
             </option>
           ))}
         </select>
         {errors.fieldId && (
           <p className="text-red-600 text-sm mt-1">
-            {errors.fieldId.message}
+            {(errors.fieldId as any).message}
           </p>
         )}
       </div>
 
       <div>
-        <input
-          {...register('value')}
-          type="text"
-          placeholder="Valor"
-          className="border p-2 rounded w-full"
-          disabled={isSubmitting}
-        />
+        {renderValueInput()}
         {errors.value && (
           <p className="text-red-600 text-sm mt-1">
-            {errors.value.message}
+            {(errors.value as any).message}
           </p>
         )}
       </div>
@@ -120,14 +279,14 @@ export function FillForm({
         <button
           type="submit"
           className="bg-zinc-900 text-white p-2 rounded w-full disabled:opacity-50"
-          disabled={isSubmitting}
+          disabled={isSubmitting || !selectedFieldId}
         >
           {isSubmitting
             ? editingFill
               ? 'Atualizando…'
               : 'Salvando…'
             : editingFill
-            ? 'Atualizar' 
+            ? 'Atualizar'
             : 'Salvar Preenchimento'}
         </button>
         {editingFill && onCancelEdit && (
