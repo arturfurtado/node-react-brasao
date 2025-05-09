@@ -79,15 +79,21 @@ describe('FieldsTable Component', () => {
     render(<FieldsTable fields={singleFieldArray} onEdit={onEditMock} onDelete={onDeleteMock} />);
 
     const field = singleFieldArray[0];
-    const row = screen.getByRole('row', { name: new RegExp(field.name, 'i') }); 
+     const cell = screen.getByRole('cell', { name: field.name });
+    const row = cell.closest('tr');
+    if (!row) {
+      throw new Error(`Linha para o campo "${field.name}" não encontrada`);
+    }
+    expect(row).toBeInTheDocument();    
+ 
 
     expect(within(row).getByText(field.name)).toBeInTheDocument();
     expect(within(row).getByText(field.datatype)).toBeInTheDocument();
     expect(within(row).getByText(`formatted-${field.createdAt}`)).toBeInTheDocument();
     expect(mockedFormatDate).toHaveBeenCalledWith(field.createdAt);
 
-    const editButton = within(row).getByRole('button', { name: 'Editar' });
-    const deleteButton = within(row).getByRole('button', { name: 'Excluir' });
+    const editButton = within(row).getByRole('button', { name: /editar preenchimento/i });
+    const deleteButton = within(row).getByRole('button', { name: /excluir preenchimento/i });
     expect(editButton).toBeInTheDocument();
     expect(deleteButton).toBeInTheDocument();
     expect(within(editButton).getByTestId('edit-icon')).toBeInTheDocument();
@@ -109,8 +115,8 @@ describe('FieldsTable Component', () => {
         expect(within(row).getByText(field.datatype)).toBeInTheDocument();
         expect(within(row).getByText(`formatted-${field.createdAt}`)).toBeInTheDocument();
         expect(mockedFormatDate).toHaveBeenCalledWith(field.createdAt);
-        expect(within(row).getByRole('button', { name: 'Editar' })).toBeInTheDocument();
-        expect(within(row).getByRole('button', { name: 'Excluir' })).toBeInTheDocument();
+        expect(within(row).getByRole('button', { name: /editar preenchimento/i })).toBeInTheDocument();
+        expect(within(row).getByRole('button', { name: /excluir preenchimento/i })).toBeInTheDocument();
       }
     });
 
@@ -126,7 +132,7 @@ describe('FieldsTable Component', () => {
     expect(row).toBeInTheDocument();
 
     if (row) {
-      const editButton = within(row).getByRole('button', { name: 'Editar' });
+      const editButton = within(row).getByRole('button', { name: /editar preenchimento/i });
       fireEvent.click(editButton);
     }
 
@@ -144,7 +150,7 @@ describe('FieldsTable Component', () => {
     expect(row).toBeInTheDocument();
 
     if (row) {
-      const deleteButton = within(row).getByRole('button', { name: 'Excluir' });
+    const deleteButton = within(row).getByRole('button', { name: /excluir preenchimento/i });
       fireEvent.click(deleteButton);
     }
 
@@ -163,14 +169,14 @@ describe('FieldsTable Component', () => {
     expect(scrollAreaElement).toHaveClass('max-h-[500px]');
     expect(scrollAreaElement).toHaveClass('border');
     expect(scrollAreaElement).toHaveClass('rounded');
-    expect(scrollAreaElement).toHaveClass('overflow-y-scroll');
+    expect(scrollAreaElement).toHaveClass('relative w-full max-h-[500px] overflow-auto border rounded');
   });
 
   it('os botões de ação possuem os ícones corretos', () => {
     render(<FieldsTable fields={[mockFieldsData[0]]} onEdit={onEditMock} onDelete={onDeleteMock} />);
 
-    const editButton = screen.getByRole('button', { name: 'Editar' });
-    const deleteButton = screen.getByRole('button', { name: 'Excluir' });
+    const editButton = screen.getByRole('button', { name: /editar preenchimento/i });
+    const deleteButton = screen.getByRole('button', { name: /excluir preenchimento/i });
 
     expect(within(editButton).getByTestId('edit-icon')).toBeInTheDocument();
     expect(within(deleteButton).getByTestId('trash-icon')).toBeInTheDocument();

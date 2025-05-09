@@ -8,7 +8,6 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Edit2, Trash2 } from "lucide-react";
 
 type FieldsTableProps = {

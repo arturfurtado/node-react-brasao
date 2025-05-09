@@ -50,7 +50,7 @@ export function FieldsAccordion({
             <AccordionContent className="p-0">
               {field.fills.length > 0 ? (
                 <Table className="w-full">
-                  <TableHeader className="bg-neutral-900 sticky top-0">
+                  <TableHeader className="dark:bg-neutral-900 sticky top-0">
                     <TableRow>
                       <TableHead>Valor</TableHead>
                       <TableHead>Criado em</TableHead>
@@ -60,13 +60,13 @@ export function FieldsAccordion({
                   <TableBody>
                     {field.fills.map((fl) => (
                       <TableRow key={fl.id} className="border-t">
-                        <TableCell className="bg-neutral-950">
+                        <TableCell className="dark:bg-neutral-950">
                           {fl.value}
                         </TableCell>
-                        <TableCell className="bg-neutral-950">
+                        <TableCell className="dark:bg-neutral-950">
                           {formatDate(fl.createdAt)}
                         </TableCell>
-                        <TableCell className="bg-neutral-950 flex justify-center space-x-2">
+                        <TableCell className="dark:bg-neutral-950 flex justify-center space-x-2">
                           <button
                             onClick={() => onEditFill(fl)}
                             aria-label="Editar Preenchimento"
